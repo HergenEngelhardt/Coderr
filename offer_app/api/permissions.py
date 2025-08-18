@@ -4,13 +4,6 @@ from rest_framework.permissions import BasePermission
 class IsBusinessUser(BasePermission):
     """
     Permission class to allow only business users to create offers.
-    
-    Args:
-        request: HTTP request object
-        view: View being accessed
-        
-    Returns:
-        bool: True if user is business type, False otherwise
     """
     
     def has_permission(self, request, view):
@@ -27,8 +20,20 @@ class IsBusinessUser(BasePermission):
         if not request.user.is_authenticated:
             return False
         
+        return self.check_user_profile(request.user)
+    
+    def check_user_profile(self, user):
+        """
+        Check if user has business profile.
+        
+        Args:
+            user: User object
+            
+        Returns:
+            bool: True if user has business profile
+        """
         try:
-            return request.user.profile.type == 'business'
+            return user.profile.type == 'business'
         except AttributeError:
             return False
 
@@ -36,14 +41,6 @@ class IsBusinessUser(BasePermission):
 class IsOwnerOrReadOnly(BasePermission):
     """
     Permission class to allow only owners to edit their offers.
-    
-    Args:
-        request: HTTP request object
-        view: View being accessed
-        obj: Object being accessed
-        
-    Returns:
-        bool: True if permission granted, False otherwise
     """
     
     def has_object_permission(self, request, view, obj):
@@ -58,7 +55,32 @@ class IsOwnerOrReadOnly(BasePermission):
         Returns:
             bool: True if user owns the offer or read-only access
         """
-        if request.method in ['GET', 'HEAD', 'OPTIONS']:
+        if self.is_read_only_request(request):
             return True
         
-        return obj.user == request.user
+        return self.is_owner(obj, request.user)
+    
+    def is_read_only_request(self, request):
+        """
+        Check if request is read-only.
+        
+        Args:
+            request: HTTP request object
+            
+        Returns:
+            bool: True if request is read-only
+        """
+        return request.method in ['GET', 'HEAD', 'OPTIONS']
+    
+    def is_owner(self, obj, user):
+        """
+        Check if user owns the object.
+        
+        Args:
+            obj: Object being accessed
+            user: User making request
+            
+        Returns:
+            bool: True if user owns the object
+        """
+        return obj.user == user

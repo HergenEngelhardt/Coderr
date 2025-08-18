@@ -5,18 +5,6 @@ from offer_app.models import Offer, OfferDetail
 class OfferDetailSerializer(serializers.ModelSerializer):
     """
     Serializer for offer detail objects.
-    
-    Args:
-        id: Detail ID
-        title: Detail title
-        revisions: Number of revisions
-        delivery_time_in_days: Delivery time in days
-        price: Detail price
-        features: List of features
-        offer_type: Type of offer (basic, standard, premium)
-        
-    Returns:
-        OfferDetail: Serialized offer detail data
     """
     
     class Meta:
@@ -35,13 +23,6 @@ class OfferDetailSerializer(serializers.ModelSerializer):
 class OfferDetailUrlSerializer(serializers.ModelSerializer):
     """
     Serializer for offer detail URLs in offer lists.
-    
-    Args:
-        id: Detail ID
-        url: Detail URL
-        
-    Returns:
-        dict: Detail ID and URL
     """
     
     url = serializers.SerializerMethodField()
@@ -69,14 +50,6 @@ class OfferDetailUrlSerializer(serializers.ModelSerializer):
 class UserDetailsSerializer(serializers.Serializer):
     """
     Serializer for user details in offer lists.
-    
-    Args:
-        first_name: User's first name
-        last_name: User's last name
-        username: User's username
-        
-    Returns:
-        dict: User detail information
     """
     
     first_name = serializers.CharField()
@@ -87,22 +60,6 @@ class UserDetailsSerializer(serializers.Serializer):
 class OfferListSerializer(serializers.ModelSerializer):
     """
     Serializer for offer list view with minimal details.
-    
-    Args:
-        id: Offer ID
-        user: User ID who created offer
-        title: Offer title
-        image: Offer image
-        description: Offer description
-        created_at: Creation timestamp
-        updated_at: Update timestamp
-        details: List of detail URLs
-        min_price: Minimum price from details
-        min_delivery_time: Minimum delivery time from details
-        user_details: User information
-        
-    Returns:
-        Offer: Serialized offer data for lists
     """
     
     details = OfferDetailUrlSerializer(many=True, read_only=True)
@@ -137,6 +94,18 @@ class OfferListSerializer(serializers.ModelSerializer):
             dict: User detail information
         """
         user = obj.user
+        return self.create_user_dict(user)
+    
+    def create_user_dict(self, user):
+        """
+        Create user dictionary.
+        
+        Args:
+            user: User instance
+            
+        Returns:
+            dict: User information
+        """
         return {
             'first_name': user.first_name or '',
             'last_name': user.last_name or '',
@@ -147,21 +116,6 @@ class OfferListSerializer(serializers.ModelSerializer):
 class OfferDetailViewSerializer(serializers.ModelSerializer):
     """
     Serializer for detailed offer view.
-    
-    Args:
-        id: Offer ID
-        user: User ID who created offer
-        title: Offer title
-        image: Offer image
-        description: Offer description
-        created_at: Creation timestamp
-        updated_at: Update timestamp
-        details: List of detail URLs
-        min_price: Minimum price from details
-        min_delivery_time: Minimum delivery time from details
-        
-    Returns:
-        Offer: Serialized offer data with details
     """
     
     details = OfferDetailUrlSerializer(many=True, read_only=True)
@@ -187,18 +141,6 @@ class OfferDetailViewSerializer(serializers.ModelSerializer):
 class OfferCreateUpdateSerializer(serializers.ModelSerializer):
     """
     Serializer for creating and updating offers.
-    
-    Args:
-        title: Offer title
-        image: Offer image
-        description: Offer description
-        details: List of offer details
-        
-    Returns:
-        Offer: Created or updated offer instance
-        
-    Raises:
-        ValidationError: If offer doesn't have exactly 3 details
     """
     
     details = OfferDetailSerializer(many=True)
@@ -209,7 +151,7 @@ class OfferCreateUpdateSerializer(serializers.ModelSerializer):
     
     def validate_details(self, value):
         """
-        Validate that offer has exactly 3 details for creation, allow partial updates.
+        Validate that offer has exactly 3 details for creation.
         
         Args:
             value: List of detail data
@@ -220,33 +162,76 @@ class OfferCreateUpdateSerializer(serializers.ModelSerializer):
         Raises:
             ValidationError: If not exactly 3 details for creation
         """
-        # For creation (no instance exists), require exactly 3 details
         if not self.instance:
-            if len(value) != 3:
-                raise serializers.ValidationError(
-                    "An offer must contain exactly 3 details."
-                )
-            
-            offer_types = [detail['offer_type'] for detail in value]
-            expected_types = ['basic', 'standard', 'premium']
-            
-            if set(offer_types) != set(expected_types):
-                raise serializers.ValidationError(
-                    "Offer must contain basic, standard, and premium details."
-                )
-        
-        # For updates, validate that offer_types are valid if provided
+            self.validate_creation_details(value)
         else:
-            offer_types = [detail['offer_type'] for detail in value]
-            valid_types = ['basic', 'standard', 'premium']
-            
-            for offer_type in offer_types:
-                if offer_type not in valid_types:
-                    raise serializers.ValidationError(
-                        f"Invalid offer_type: {offer_type}. Must be one of: {valid_types}"
-                    )
+            self.validate_update_details(value)
         
         return value
+    
+    def validate_creation_details(self, value):
+        """
+        Validate details for offer creation.
+        
+        Args:
+            value: List of detail data
+            
+        Raises:
+            ValidationError: If not exactly 3 details
+        """
+        if len(value) != 3:
+            raise serializers.ValidationError("An offer must contain exactly 3 details.")
+        
+        self.validate_offer_types(value)
+    
+    def validate_update_details(self, value):
+        """
+        Validate details for offer update.
+        
+        Args:
+            value: List of detail data
+            
+        Raises:
+            ValidationError: If invalid offer types
+        """
+        self.validate_offer_types_update(value)
+    
+    def validate_offer_types(self, value):
+        """
+        Validate offer types for creation.
+        
+        Args:
+            value: List of detail data
+            
+        Raises:
+            ValidationError: If missing required types
+        """
+        offer_types = [detail['offer_type'] for detail in value]
+        expected_types = ['basic', 'standard', 'premium']
+        
+        if set(offer_types) != set(expected_types):
+            raise serializers.ValidationError(
+                "Offer must contain basic, standard, and premium details."
+            )
+    
+    def validate_offer_types_update(self, value):
+        """
+        Validate offer types for update.
+        
+        Args:
+            value: List of detail data
+            
+        Raises:
+            ValidationError: If invalid offer types
+        """
+        offer_types = [detail['offer_type'] for detail in value]
+        valid_types = ['basic', 'standard', 'premium']
+        
+        for offer_type in offer_types:
+            if offer_type not in valid_types:
+                raise serializers.ValidationError(
+                    f"Invalid offer_type: {offer_type}. Must be one of: {valid_types}"
+                )
     
     def create(self, validated_data):
         """
@@ -259,12 +244,33 @@ class OfferCreateUpdateSerializer(serializers.ModelSerializer):
             Offer: Created offer instance
         """
         details_data = validated_data.pop('details')
-        offer = Offer.objects.create(**validated_data)
-        
-        for detail_data in details_data:
-            OfferDetail.objects.create(offer=offer, **detail_data)
+        offer = self.create_offer(validated_data)
+        self.create_offer_details(offer, details_data)
         
         return offer
+    
+    def create_offer(self, validated_data):
+        """
+        Create offer object.
+        
+        Args:
+            validated_data: Validated offer data
+            
+        Returns:
+            Offer: Created offer instance
+        """
+        return Offer.objects.create(**validated_data)
+    
+    def create_offer_details(self, offer, details_data):
+        """
+        Create offer details.
+        
+        Args:
+            offer: Offer instance
+            details_data: List of detail data
+        """
+        for detail_data in details_data:
+            OfferDetail.objects.create(offer=offer, **detail_data)
     
     def update(self, instance, validated_data):
         """
@@ -279,21 +285,51 @@ class OfferCreateUpdateSerializer(serializers.ModelSerializer):
         """
         details_data = validated_data.pop('details', None)
         
+        self.update_offer_fields(instance, validated_data)
+        
+        if details_data:
+            self.update_offer_details(instance, details_data)
+        
+        return instance
+    
+    def update_offer_fields(self, instance, validated_data):
+        """
+        Update offer fields.
+        
+        Args:
+            instance: Offer instance
+            validated_data: Validated data
+        """
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
+    
+    def update_offer_details(self, instance, details_data):
+        """
+        Update offer details.
         
-        if details_data:
-            for detail_data in details_data:
-                offer_type = detail_data.get('offer_type')
-                detail, created = OfferDetail.objects.get_or_create(
-                    offer=instance,
-                    offer_type=offer_type,
-                    defaults=detail_data
-                )
-                if not created:
-                    for attr, value in detail_data.items():
-                        setattr(detail, attr, value)
-                    detail.save()
+        Args:
+            instance: Offer instance
+            details_data: List of detail data
+        """
+        for detail_data in details_data:
+            offer_type = detail_data.get('offer_type')
+            detail, created = OfferDetail.objects.get_or_create(
+                offer=instance,
+                offer_type=offer_type,
+                defaults=detail_data
+            )
+            if not created:
+                self.update_detail_fields(detail, detail_data)
+    
+    def update_detail_fields(self, detail, detail_data):
+        """
+        Update detail fields.
         
-        return instance
+        Args:
+            detail: OfferDetail instance
+            detail_data: Detail data
+        """
+        for attr, value in detail_data.items():
+            setattr(detail, attr, value)
+        detail.save()

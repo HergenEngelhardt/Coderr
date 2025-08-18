@@ -15,13 +15,6 @@ from .permissions import IsBusinessUser, IsOwnerOrReadOnly
 class OfferFilter(filters.FilterSet):
     """
     Filter class for offer queryset filtering.
-    
-    Args:
-        creator_id: Filter by user who created offers
-        min_price: Filter by minimum price
-        max_delivery_time: Filter by maximum delivery time
-        ordering: Order by updated_at or min_price
-        search: Search in title and description
     """
     
     creator_id = filters.NumberFilter(field_name='user__id')
@@ -83,17 +76,6 @@ class OfferFilter(filters.FilterSet):
 class OfferListCreateView(generics.ListCreateAPIView):
     """
     List all offers or create a new offer.
-    
-    Args:
-        request: HTTP request object
-        
-    Returns:
-        Response: Paginated list of offers or created offer
-        
-    Raises:
-        400: Invalid request data
-        401: User not authenticated  
-        403: User not business type
     """
     
     queryset = Offer.objects.all()
@@ -134,18 +116,6 @@ class OfferListCreateView(generics.ListCreateAPIView):
 class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     Retrieve, update or delete an offer.
-    
-    Args:
-        request: HTTP request object
-        pk: Primary key of offer
-        
-    Returns:
-        Response: Offer data or success/error response
-        
-    Raises:
-        401: User not authenticated
-        403: User not owner of offer
-        404: Offer not found
     """
     
     queryset = Offer.objects.all()
@@ -158,25 +128,23 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
         Returns:
             Serializer: Appropriate serializer for the action
         """
-        if self.request.method in ['PUT', 'PATCH']:
+        if self.is_update_request():
             return OfferCreateUpdateSerializer
         return OfferDetailViewSerializer
+    
+    def is_update_request(self):
+        """
+        Check if request is update request.
+        
+        Returns:
+            bool: True if request is PUT or PATCH
+        """
+        return self.request.method in ['PUT', 'PATCH']
 
 
 class OfferDetailDetailView(generics.RetrieveAPIView):
     """
     Retrieve specific offer detail by ID.
-    
-    Args:
-        request: HTTP request object
-        pk: Primary key of offer detail
-        
-    Returns:
-        Response: Offer detail data
-        
-    Raises:
-        401: User not authenticated
-        404: Offer detail not found
     """
     
     queryset = OfferDetail.objects.all()
