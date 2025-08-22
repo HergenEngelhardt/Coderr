@@ -270,17 +270,14 @@ Access Django admin at `/admin/` to:
 Use tools like Postman or curl to test endpoints:
 
 ```bash
-# Register user
 curl -X POST http://127.0.0.1:8000/api/registration/ \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","email":"test@example.com","password":"testpass123","repeated_password":"testpass123","type":"customer"}'
 
-# Login
 curl -X POST http://127.0.0.1:8000/api/login/ \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","password":"testpass123"}'
 
-# Use token in subsequent requests
 curl -X GET http://127.0.0.1:8000/api/offers/ \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
