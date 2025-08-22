@@ -5,24 +5,8 @@ from profile_app.models import UserProfile
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """
-    Serializer for user profile with custom field handling.
-    
-    Args:
-        user: User ID
-        username: Username from related user
-        first_name: First name from related user
-        last_name: Last name from related user
-        file: Profile picture file
-        location: User location
-        tel: Telephone number
-        description: User description
-        working_hours: Working hours for business users
-        type: User type (customer/business)
-        email: Email from related user
-        created_at: Profile creation timestamp
-        
-    Returns:
-        UserProfile: Serialized profile data
+    Serializer for user profiles.
+    Converts UserProfile objects to JSON and back.
     """
     
     username = serializers.CharField(source='user.username', read_only=True)
@@ -50,13 +34,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         """
-        Custom representation to ensure empty strings instead of null.
-        
-        Args:
-            instance: UserProfile instance
-            
-        Returns:
-            dict: Serialized data with empty strings for null fields
+        Converts null values to empty strings.
+        This prevents null values from being sent to frontend.
         """
         data = super().to_representation(instance)
         
@@ -77,14 +56,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         """
-        Update profile and related user data.
-        
-        Args:
-            instance: UserProfile instance to update
-            validated_data: Validated data for update
-            
-        Returns:
-            UserProfile: Updated profile instance
+        Updates profile and related user data.
+        Saves both UserProfile and User changes.
         """
         user_data = validated_data.pop('user', {})
         
@@ -103,22 +76,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class BusinessProfileListSerializer(serializers.ModelSerializer):
     """
-    Simplified serializer for business profile lists.
-    
-    Args:
-        user: User ID
-        username: Username from related user
-        first_name: First name from related user
-        last_name: Last name from related user
-        file: Profile picture file
-        location: User location
-        tel: Telephone number
-        description: User description
-        working_hours: Working hours
-        type: User type
-        
-    Returns:
-        UserProfile: Serialized business profile data
+    Simple serializer for business profile lists.
+    Shows only important information for business customers.
     """
     
     username = serializers.CharField(source='user.username', read_only=True)
@@ -143,13 +102,8 @@ class BusinessProfileListSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         """
-        Custom representation to ensure empty strings instead of null.
-        
-        Args:
-            instance: UserProfile instance
-            
-        Returns:
-            dict: Serialized data with empty strings for null fields
+        Converts null values to empty strings.
+        Prevents null values in API response.
         """
         data = super().to_representation(instance)
         
@@ -171,19 +125,8 @@ class BusinessProfileListSerializer(serializers.ModelSerializer):
 
 class CustomerProfileListSerializer(serializers.ModelSerializer):
     """
-    Simplified serializer for customer profile lists.
-    
-    Args:
-        user: User ID
-        username: Username from related user
-        first_name: First name from related user
-        last_name: Last name from related user
-        file: Profile picture file
-        uploaded_at: Upload timestamp for file
-        type: User type
-        
-    Returns:
-        UserProfile: Serialized customer profile data
+    Simple serializer for customer profile lists.
+    Shows only important information for private customers.
     """
     
     username = serializers.CharField(source='user.username', read_only=True)

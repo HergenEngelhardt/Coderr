@@ -12,19 +12,8 @@ from .permissions import IsOwnerOrReadOnly
 
 class ProfileDetailView(generics.RetrieveUpdateAPIView):
     """
-    Retrieve and update user profile details.
-    
-    Args:
-        request: HTTP request object
-        pk: Primary key of profile to retrieve/update
-        
-    Returns:
-        Response: Profile data or error response
-        
-    Raises:
-        401: User not authenticated
-        403: User not owner of profile
-        404: Profile not found
+    View for displaying and editing user profiles.
+    Only the profile owner can edit their profile.
     """
     
     queryset = UserProfile.objects.all()
@@ -33,13 +22,8 @@ class ProfileDetailView(generics.RetrieveUpdateAPIView):
     
     def get_object(self):
         """
-        Get profile object by primary key.
-        
-        Returns:
-            UserProfile: Profile instance
-            
-        Raises:
-            404: Profile not found
+        Gets the profile based on user ID.
+        Returns 404 if profile does not exist.
         """
         pk = self.kwargs.get('pk')
         return generics.get_object_or_404(UserProfile, user__id=pk)
@@ -47,16 +31,8 @@ class ProfileDetailView(generics.RetrieveUpdateAPIView):
 
 class BusinessProfileListView(generics.ListAPIView):
     """
-    List all business user profiles.
-    
-    Args:
-        request: HTTP request object
-        
-    Returns:
-        Response: List of business profiles
-        
-    Raises:
-        401: User not authenticated
+    View for displaying all business profiles.
+    Shows a list of all business customers.
     """
     
     serializer_class = BusinessProfileListSerializer
@@ -64,26 +40,16 @@ class BusinessProfileListView(generics.ListAPIView):
     
     def get_queryset(self):
         """
-        Get queryset of business profiles.
-        
-        Returns:
-            QuerySet: Business user profiles
+        Filters only business profiles from database.
+        Returns all profiles with type='business'.
         """
         return UserProfile.objects.filter(type='business')
 
 
 class CustomerProfileListView(generics.ListAPIView):
     """
-    List all customer user profiles.
-    
-    Args:
-        request: HTTP request object
-        
-    Returns:
-        Response: List of customer profiles
-        
-    Raises:
-        401: User not authenticated
+    View for displaying all customer profiles.
+    Shows a list of all private customers.
     """
     
     serializer_class = CustomerProfileListSerializer
@@ -91,9 +57,7 @@ class CustomerProfileListView(generics.ListAPIView):
     
     def get_queryset(self):
         """
-        Get queryset of customer profiles.
-        
-        Returns:
-            QuerySet: Customer user profiles
+        Filters only customer profiles from database.
+        Returns all profiles with type='customer'.
         """
         return UserProfile.objects.filter(type='customer')

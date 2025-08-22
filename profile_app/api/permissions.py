@@ -3,28 +3,14 @@ from rest_framework.permissions import BasePermission
 
 class IsOwnerOrReadOnly(BasePermission):
     """
-    Custom permission to only allow owners to edit their profiles.
-    
-    Args:
-        request: HTTP request object
-        view: View being accessed
-        obj: Object being accessed
-        
-    Returns:
-        bool: True if permission granted, False otherwise
+    Custom permission for profile owners.
+    Only allows profile owner to edit their profile.
     """
     
     def has_object_permission(self, request, view, obj):
         """
-        Check if user has permission to access object.
-        
-        Args:
-            request: HTTP request object
-            view: View being accessed
-            obj: Object being accessed
-            
-        Returns:
-            bool: True if user owns the profile or read-only access
+        Checks if user is authorized.
+        Read access for everyone, write access only for owner.
         """
         if request.method in ['GET', 'HEAD', 'OPTIONS']:
             return True
