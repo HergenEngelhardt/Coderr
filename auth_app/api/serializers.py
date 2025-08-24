@@ -169,4 +169,6 @@ class UserLoginSerializer(serializers.Serializer):
         attrs['user'] = user
         attrs['token'] = str(refresh.access_token)
         attrs['email'] = user.email
-        attrs['user_id']
+        attrs['user_id'] = user.id
+        
+        return attrs

@@ -143,6 +143,32 @@ class CustomerProfileListSerializer(serializers.ModelSerializer):
             'first_name', 
             'last_name', 
             'file',
+            'location',
+            'tel',
+            'description',
+            'working_hours',
             'uploaded_at',
             'type'
         ]
+    
+    def to_representation(self, instance):
+        """
+        Converts null values to empty strings.
+        Prevents null values in API response.
+        """
+        data = super().to_representation(instance)
+        
+        fields_to_convert = [
+            'first_name', 
+            'last_name', 
+            'location', 
+            'tel', 
+            'description', 
+            'working_hours'
+        ]
+        
+        for field in fields_to_convert:
+            if data.get(field) is None:
+                data[field] = ''
+        
+        return data
