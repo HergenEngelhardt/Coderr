@@ -23,5 +23,5 @@ staticfiles/
 Thumbs.db
 
 # Test files
-test_*.py
+test_*
 *_test.py
