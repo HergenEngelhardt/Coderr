@@ -106,9 +106,6 @@ black .
 
 # Lint code  
 flake8 .
-
-# Run tests
-python tests/api_validation.py
 ```
 
 ### Database Operations
