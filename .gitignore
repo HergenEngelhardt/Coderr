@@ -25,3 +25,5 @@ Thumbs.db
 # Test files
 test_*
 *_test.py
+
+.bat
