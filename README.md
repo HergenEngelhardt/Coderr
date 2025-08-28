@@ -28,42 +28,50 @@ Coderr is a freelancer platform API built with Django REST Framework backend. It
 ## Installation
 
 ### 1. Clone the repository
+
 ```bash
 git clone https://github.com/HergenEngelhardt/Coderr.git
 cd Coderr
 ```
 
 ### 2. Set up virtual environment
+
 ```bash
 python -m venv .venv
 ```
 
 **On Windows:**
+
 ```bash
 .venv\Scripts\activate
 ```
 
 **On macOS/Linux:**
+
 ```bash
 source .venv/bin/activate
 ```
 
 ### 3. Install dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 4. Database setup
+
 ```bash
 python manage.py migrate
 ```
 
 ### 5. Create a superuser
+
 ```bash
 python manage.py createsuperuser
 ```
 
 ### 6. (Optional) Load sample data
+
 ```bash
 python manage.py loaddata fixtures/sample_data.json
 ```
@@ -71,6 +79,7 @@ python manage.py loaddata fixtures/sample_data.json
 ## Running the Project
 
 ### Start the backend server
+
 ```bash
 python manage.py runserver
 ```
@@ -78,6 +87,7 @@ python manage.py runserver
 The server will start at http://127.0.0.1:8000/
 
 ### Access the application
+
 - **API**: http://127.0.0.1:8000/api/
 - **Admin Interface**: http://127.0.0.1:8000/admin/
 - **Frontend**: Open your frontend files in a local development server
@@ -100,6 +110,7 @@ The server will start at http://127.0.0.1:8000/
 ## Development
 
 ### Code Quality
+
 ```bash
 # Format code
 black .
@@ -109,6 +120,7 @@ flake8 .
 ```
 
 ### Database Operations
+
 ```bash
 # Create new migration
 python manage.py makemigrations
@@ -131,6 +143,7 @@ python manage.py createsuperuser
 ## Troubleshooting
 
 ### Common Issues
+
 - **Migration errors**: Run `python manage.py migrate --fake-initial`
 - **Permission errors**: Ensure proper file permissions on database
 - **CORS errors**: Check CORS settings in settings.py
