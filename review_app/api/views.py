@@ -1,13 +1,8 @@
-# Django imports
 from django.db.models import Avg, Count
-
-# Third-party imports
 from django_filters import rest_framework as filters
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
-# Local imports
 from review_app.models import Review
 from .permissions import IsCustomerUserForReview, IsReviewOwner
 from .serializers import ReviewSerializer, ReviewUpdateSerializer
