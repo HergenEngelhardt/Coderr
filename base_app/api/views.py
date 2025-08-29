@@ -1,11 +1,16 @@
+# Django imports
 from django.db.models import Avg
+
+# Third-party imports
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from review_app.models import Review
-from profile_app.models import UserProfile
+
+# Local imports
 from offer_app.models import Offer
+from profile_app.models import UserProfile
+from review_app.models import Review
 from .serializers import BaseInfoSerializer
 
 

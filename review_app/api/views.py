@@ -1,11 +1,16 @@
+# Django imports
+from django.db.models import Avg, Count
+
+# Third-party imports
 from django_filters import rest_framework as filters
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Avg, Count
+
+# Local imports
 from review_app.models import Review
-from .serializers import ReviewSerializer, ReviewUpdateSerializer
 from .permissions import IsCustomerUserForReview, IsReviewOwner
+from .serializers import ReviewSerializer, ReviewUpdateSerializer
 
 
 class ReviewFilter(filters.FilterSet):
@@ -180,42 +185,59 @@ class BusinessUserReviewStatsView(generics.GenericAPIView):
         Returns:
             Response: Statistics data
         """
+        business_user = self._get_business_user(business_user_id)
+        if isinstance(business_user, Response):
+            return business_user
+            
+        reviews = Review.objects.filter(business_user=business_user)
+        stats_data = self._calculate_review_statistics(reviews, business_user_id, business_user.username)
+        
+        return Response(stats_data, status=status.HTTP_200_OK)
+    
+    def _get_business_user(self, business_user_id):
+        """Get business user by ID or return error response."""
         try:
             from django.contrib.auth.models import User
-            business_user = User.objects.get(id=business_user_id)
+            return User.objects.get(id=business_user_id)
         except User.DoesNotExist:
             return Response(
                 {"error": "Business user not found"}, 
                 status=status.HTTP_404_NOT_FOUND
             )
+    
+    def _calculate_review_statistics(self, reviews, business_user_id, business_user_name):
+        """Calculate comprehensive review statistics."""
+        stats = self._get_basic_statistics(reviews)
+        rating_distribution = self._get_rating_distribution(reviews)
+        sentiment_counts = self._get_sentiment_counts(reviews)
         
-        reviews = Review.objects.filter(business_user=business_user)
-        
-        # Basic statistics
-        stats = reviews.aggregate(
+        return {
+            'business_user_id': business_user_id,
+            'business_user_name': business_user_name,
+            'average_rating': round(stats['average_rating'] or 0, 2),
+            'total_reviews': stats['total_reviews'],
+            **sentiment_counts,
+            'rating_distribution': rating_distribution
+        }
+    
+    def _get_basic_statistics(self, reviews):
+        """Get basic aggregate statistics."""
+        return reviews.aggregate(
             average_rating=Avg('rating'),
             total_reviews=Count('id')
         )
-        
-        # Rating distribution
+    
+    def _get_rating_distribution(self, reviews):
+        """Get distribution of ratings 1-5."""
         rating_distribution = {}
         for i in range(1, 6):
             rating_distribution[f'rating_{i}'] = reviews.filter(rating=i).count()
-        
-        # Positive/Negative review counts
-        positive_reviews = reviews.filter(rating__gte=4).count()
-        negative_reviews = reviews.filter(rating__lte=2).count()
-        neutral_reviews = reviews.filter(rating=3).count()
-        
-        response_data = {
-            'business_user_id': business_user_id,
-            'business_user_name': business_user.username,
-            'average_rating': round(stats['average_rating'] or 0, 2),
-            'total_reviews': stats['total_reviews'],
-            'positive_reviews': positive_reviews,
-            'neutral_reviews': neutral_reviews,
-            'negative_reviews': negative_reviews,
-            'rating_distribution': rating_distribution
+        return rating_distribution
+    
+    def _get_sentiment_counts(self, reviews):
+        """Get positive, neutral, and negative review counts."""
+        return {
+            'positive_reviews': reviews.filter(rating__gte=4).count(),
+            'neutral_reviews': reviews.filter(rating=3).count(),
+            'negative_reviews': reviews.filter(rating__lte=2).count()
         }
-        
-        return Response(response_data, status=status.HTTP_200_OK)
