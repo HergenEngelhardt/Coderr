@@ -123,7 +123,8 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         try:
             OfferDetail.objects.get(id=value)
         except OfferDetail.DoesNotExist:
-            raise serializers.ValidationError("Offer detail not found.")
+            from rest_framework.exceptions import NotFound
+            raise NotFound("Offer detail not found.")
         return value
 
     def create(self, validated_data):
