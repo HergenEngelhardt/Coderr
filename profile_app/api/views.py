@@ -39,6 +39,7 @@ class BusinessProfileListView(generics.ListAPIView):
     
     serializer_class = BusinessProfileListSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None  # Disable pagination as per specifications
     
     def get_queryset(self):
         """
@@ -56,6 +57,7 @@ class CustomerProfileListView(generics.ListAPIView):
     
     serializer_class = CustomerProfileListSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None  # Disable pagination as per specifications
     
     def get_queryset(self):
         """
