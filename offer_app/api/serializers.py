@@ -152,23 +152,16 @@ class OfferDetailViewSerializer(serializers.ModelSerializer):
     Serializer for detailed offer view.
     """
     
-    details = OfferDetailUrlSerializer(many=True, read_only=True)
-    min_price = serializers.ReadOnlyField()
-    min_delivery_time = serializers.ReadOnlyField()
+    details = OfferDetailSerializer(many=True, read_only=True)
     
     class Meta:
         model = Offer
         fields = [
             'id',
-            'user', 
             'title', 
             'image', 
             'description', 
-            'created_at', 
-            'updated_at',
-            'details',
-            'min_price',
-            'min_delivery_time'
+            'details'
         ]
 
 
@@ -229,8 +222,12 @@ class OfferCreateUpdateSerializer(serializers.ModelSerializer):
             value: List of detail data
             
         Raises:
-            ValidationError: If invalid offer types
+            ValidationError: If invalid offer types or missing offer_type
         """
+        for detail_data in value:
+            if 'offer_type' not in detail_data:
+                raise serializers.ValidationError("Each detail must include 'offer_type' for identification.")
+        
         self.validate_offer_types_update(value)
     
     def validate_offer_types(self, value):
@@ -343,7 +340,7 @@ class OfferCreateUpdateSerializer(serializers.ModelSerializer):
     
     def update_offer_details(self, instance, details_data):
         """
-        Update offer details.
+        Update offer details while preserving IDs.
         
         Args:
             instance: Offer instance
@@ -351,13 +348,14 @@ class OfferCreateUpdateSerializer(serializers.ModelSerializer):
         """
         for detail_data in details_data:
             offer_type = detail_data.get('offer_type')
-            detail, created = OfferDetail.objects.get_or_create(
-                offer=instance,
-                offer_type=offer_type,
-                defaults=detail_data
-            )
-            if not created:
+            if not offer_type:
+                raise serializers.ValidationError("offer_type is required for each detail to identify it.")
+            
+            try:
+                detail = OfferDetail.objects.get(offer=instance, offer_type=offer_type)
                 self.update_detail_fields(detail, detail_data)
+            except OfferDetail.DoesNotExist:
+                OfferDetail.objects.create(offer=instance, **detail_data)
     
     def update_detail_fields(self, detail, detail_data):
         """

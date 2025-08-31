@@ -118,6 +118,19 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
             return OrderStatusUpdateSerializer
         return OrderSerializer
     
+    def update(self, request, *args, **kwargs):
+        """
+        Update order status and return complete order data.
+        """
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        updated_instance = serializer.save()
+        
+        response_serializer = OrderSerializer(updated_instance)
+        return Response(response_serializer.data)
+    
     def get_permissions(self):
         """
         Get permissions for the view.

@@ -165,15 +165,15 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
     
     def update(self, request, *args, **kwargs):
         """
-        Update offer and return it with full details including IDs.
+        Update offer and return it with complete details including IDs.
         """
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         updated_instance = serializer.save()
-        
-        response_serializer = OfferCreateUpdateSerializer(updated_instance)
+        updated_instance.refresh_from_db()
+        response_serializer = OfferDetailViewSerializer(updated_instance)
         return Response(response_serializer.data)
     
     def is_update_request(self):
