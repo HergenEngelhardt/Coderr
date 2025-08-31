@@ -41,10 +41,7 @@ class OfferDetailUrlSerializer(serializers.ModelSerializer):
         Returns:
             str: URL path for the detail
         """
-        request = self.context.get('request')
-        if request:
-            return request.build_absolute_uri(f'/api/offerdetails/{obj.id}/')
-        return f'/api/offerdetails/{obj.id}/'
+        return f'/offerdetails/{obj.id}/'
 
 
 class UserDetailsSerializer(serializers.Serializer):
