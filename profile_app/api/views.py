@@ -26,7 +26,9 @@ class ProfileDetailView(generics.RetrieveUpdateAPIView):
         Returns 404 if profile does not exist.
         """
         pk = self.kwargs.get('pk')
-        return generics.get_object_or_404(UserProfile, user__id=pk)
+        obj = generics.get_object_or_404(UserProfile, user__id=pk)
+        self.check_object_permissions(self.request, obj)
+        return obj
 
 
 class BusinessProfileListView(generics.ListAPIView):

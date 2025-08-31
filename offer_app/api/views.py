@@ -2,6 +2,7 @@ from django_filters import rest_framework as filters
 from django.db import models
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from offer_app.models import Offer, OfferDetail
 from .serializers import (
     OfferListSerializer,
@@ -10,6 +11,15 @@ from .serializers import (
     OfferDetailSerializer
 )
 from .permissions import IsBusinessUser, IsOwnerOrReadOnly
+
+
+class OfferPagination(PageNumberPagination):
+    """
+    Custom pagination class for offers as specified in the API documentation.
+    """
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 
 class OfferFilter(filters.FilterSet):
@@ -80,6 +90,7 @@ class OfferListCreateView(generics.ListCreateAPIView):
     
     queryset = Offer.objects.all()
     filterset_class = OfferFilter
+    pagination_class = OfferPagination  # Enable pagination only for offers
     
     def get_serializer_class(self):
         """
