@@ -49,6 +49,19 @@ class OrderListCreateView(generics.ListCreateAPIView):
             return OrderCreateSerializer
         return OrderSerializer
     
+    def create(self, request, *args, **kwargs):
+        """
+        Create order and return it with OrderSerializer for proper response format.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+        
+        # Use OrderSerializer for response to exclude offer_detail_id
+        response_serializer = OrderSerializer(order)
+        headers = self.get_success_headers(response_serializer.data)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
     def get_permissions(self):
         """
         Get permissions for the view.

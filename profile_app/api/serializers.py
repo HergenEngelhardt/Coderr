@@ -143,10 +143,6 @@ class CustomerProfileListSerializer(serializers.ModelSerializer):
             'first_name', 
             'last_name', 
             'file',
-            'location',
-            'tel',
-            'description',
-            'working_hours',
             'uploaded_at',
             'type'
         ]
@@ -160,11 +156,7 @@ class CustomerProfileListSerializer(serializers.ModelSerializer):
         
         fields_to_convert = [
             'first_name', 
-            'last_name', 
-            'location', 
-            'tel', 
-            'description', 
-            'working_hours'
+            'last_name'
         ]
         
         for field in fields_to_convert:

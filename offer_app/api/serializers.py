@@ -148,6 +148,9 @@ class OfferCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
         fields = ['id', 'title', 'image', 'description', 'details']
+        extra_kwargs = {
+            'image': {'required': False, 'allow_null': True}
+        }
     
     def validate_details(self, value):
         """
