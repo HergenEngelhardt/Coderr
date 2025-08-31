@@ -39,9 +39,12 @@ class OfferDetailUrlSerializer(serializers.ModelSerializer):
             obj: OfferDetail instance
             
         Returns:
-            str: URL path for the detail
+            str: Full URL for the detail
         """
-        return f'/offerdetails/{obj.id}/'
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(f'/api/offerdetails/{obj.id}/')
+        return f'http://127.0.0.1:8000/api/offerdetails/{obj.id}/'
 
 
 class UserDetailsSerializer(serializers.Serializer):
@@ -59,6 +62,7 @@ class OfferListSerializer(serializers.ModelSerializer):
     Serializer for offer list view with minimal details.
     """
     
+    url = serializers.SerializerMethodField()
     details = OfferDetailUrlSerializer(many=True, read_only=True)
     min_price = serializers.ReadOnlyField()
     min_delivery_time = serializers.ReadOnlyField()
@@ -68,6 +72,39 @@ class OfferListSerializer(serializers.ModelSerializer):
         model = Offer
         fields = [
             'id',
+            'url',
+            'user', 
+            'title', 
+            'image', 
+            'description', 
+            'created_at', 
+            'updated_at',
+            'details',
+            'min_price',
+            'min_delivery_time',
+            'user_details'
+        ]
+    
+    def get_url(self, obj):
+        """
+        Generate URL for offer detail.
+        
+        Args:
+            obj: Offer instance
+            
+        Returns:
+            str: Full URL for the offer detail
+        """
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(f'/api/offers/{obj.id}/')
+        return f'http://127.0.0.1:8000/api/offers/{obj.id}/'
+    
+    class Meta:
+        model = Offer
+        fields = [
+            'id',
+            'url',
             'user', 
             'title', 
             'image', 

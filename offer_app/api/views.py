@@ -28,7 +28,6 @@ class OfferFilter(filters.FilterSet):
     creator_id = filters.NumberFilter(field_name='user__id')
     min_price = filters.NumberFilter(method='filter_min_price')
     max_delivery_time = filters.NumberFilter(method='filter_max_delivery_time')
-    ordering = filters.OrderingFilter(fields=['updated_at', 'min_price'])
     search = filters.CharFilter(method='filter_search')
     
     class Meta:
@@ -89,6 +88,29 @@ class OfferListCreateView(generics.ListCreateAPIView):
     queryset = Offer.objects.all()
     filterset_class = OfferFilter
     pagination_class = OfferPagination
+    
+    def get_queryset(self):
+        """
+        Get queryset with optional ordering.
+        """
+        queryset = super().get_queryset()
+        ordering = self.request.query_params.get('ordering')
+        
+        if ordering == 'min_price':
+            # Order by minimum price from details
+            return queryset.annotate(
+                min_detail_price=models.Min('details__price')
+            ).order_by('min_detail_price')
+        elif ordering == '-min_price':
+            return queryset.annotate(
+                min_detail_price=models.Min('details__price')
+            ).order_by('-min_detail_price')
+        elif ordering == 'updated_at':
+            return queryset.order_by('updated_at')
+        elif ordering == '-updated_at':
+            return queryset.order_by('-updated_at')
+        
+        return queryset
     
     def get_serializer_class(self):
         """
