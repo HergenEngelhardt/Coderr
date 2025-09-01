@@ -152,16 +152,23 @@ class OfferDetailViewSerializer(serializers.ModelSerializer):
     Serializer for detailed offer view.
     """
     
-    details = OfferDetailSerializer(many=True, read_only=True)
+    details = OfferDetailUrlSerializer(many=True, read_only=True)
+    min_price = serializers.ReadOnlyField()
+    min_delivery_time = serializers.ReadOnlyField()
     
     class Meta:
         model = Offer
         fields = [
             'id',
+            'user',
             'title', 
             'image', 
             'description', 
-            'details'
+            'created_at',
+            'updated_at',
+            'details',
+            'min_price',
+            'min_delivery_time'
         ]
 
 
